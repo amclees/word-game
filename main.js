@@ -68,15 +68,15 @@ function displayBoard() {
       } else {
         element.innerText = '\u25ef';
       }
-      var x = i;
-      var y = j;
+      let x = i;
+      let y = j;
       element.onclick = () => {
         var input = prompt('Enter the letter');
-        if (!input || input.length !== 1) {
+        if (!input || input.length !== 1 || !/[A-z]/.test(input)) {
           alert('Not a single letter');
           return;
         }
-        letterBoard[x][y] = input;
+        letterBoard[x][y] = input.toUpperCase();
         displayBoard();
       }
       row.appendChild(element);
