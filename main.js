@@ -87,6 +87,11 @@ function displayBoard() {
   boardContainer.appendChild(table);
 }
 
-letterBoard[4][3] = 'R';
+var letterPoolInput = document.getElementById('letter-pool');
+function getLetterPool() {
+  return letterPoolInput.value.toLowerCase().trim().split('').filter((letter, index, letters) => {
+    return letters.indexOf(letter) === index && /[a-z]/.test(letter);
+  });
+}
 
 displayBoard();
