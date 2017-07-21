@@ -48,6 +48,18 @@ function emptyBoard(width, height) {
 }
 
 var words = JSON.parse(getWords());
+var wordDictionary = {};
+for (let i = 0; i < words.length; i++) {
+  var toSort = words[i].split('').filter((word, index, array) => {
+    return array.indexOf(word) === index;
+  });
+  toSort.sort();
+  var sorted = toSort.join('');
+  if (!wordDictionary[sorted]) {
+    wordDictionary[sorted] = [];
+  }
+  wordDictionary[sorted].push(words[i]);
+}
 
 var boardContainer = document.getElementById('board-container');
 
@@ -127,7 +139,7 @@ var placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
   var letterPool = getLetterPool();
   if (letterPool.length === 0) { return; }
-  
+
 };
 
 displayBoard();
