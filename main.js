@@ -123,5 +123,11 @@ var letterValues = {
   'z': 1
 };
 
+var placementButton = document.getElementById('placement-button');
+placementButton.onclick = function() {
+  var letterPool = getLetterPool();
+  if (letterPool.length === 0) { return; }
+  
+};
 
 displayBoard();
