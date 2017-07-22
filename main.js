@@ -135,11 +135,70 @@ var letterValues = {
   'z': 1
 };
 
+function spotEmpty(x, y) {
+  return letterBoard[x][y] === null;
+}
+
+function adjacent(x, y) {
+  var adjacents = [];
+  for (let i = -1; i <= 1; i++) {
+    for (let j = -1; j <= 1; j++) {
+      let adjacentX = x + i;
+      let adjacentY = y + j;
+      if (
+        adjacentX >= 0
+        && adjacentX < letterBoard.length
+        && adjacentY >= 0
+        && adjacentY < letterBoard[0].length
+      ) {
+        adjacents.push([x, y]);
+      }
+    }
+  }
+  return adjacents;
+}
+
+function spotClear(x, y, whitelisted) {
+  if (!whitelisted) { whitelisted = []; }
+  return adjacents(x, y).reduce(function(acc, adjacent) {
+    return acc && (spotEmpty(adjacent) || whitelisted.reduce(function(acc, whitelisted) {
+      return acc || (whitelisted[0] === adjacent[0] && whitelisted[1] == adjacent[1])
+    }, false));
+  }, true);
+}
+
+function getPlaySpots() {
+  playSpots = [];
+  for (let i = 0; i < letterBoard.length; i++) {
+    for (let j = 0; j < letterBoard[0].length; j++) {
+      let spot = false,
+          spotDirection = -1;
+
+      if (letterBoard[i][j] !== null) {
+        // Set spot and direction
+      }
+
+      if (spot) {
+        playSpots.push({
+          spot: [i, j],
+          letter: letterBoard[i][j],
+          // Directions are 0, 1 for right and down respectively
+          direction: spotDirection,
+          // Will track the maximum word length space
+          spotLimit: 0
+        });
+      }
+    }
+  }
+  return playSpots;
+}
+
 var placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
   var letterPool = getLetterPool();
   if (letterPool.length === 0) { return; }
 
+  var playSpots = getPlaySpots();
 };
 
 displayBoard();
