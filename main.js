@@ -140,7 +140,7 @@ function spotEmpty(x, y) {
 }
 
 function adjacent(x, y) {
-  var adjacents = [];
+  let adjacents = [];
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
       let adjacentX = x + i;
@@ -151,7 +151,7 @@ function adjacent(x, y) {
         && adjacentY >= 0
         && adjacentY < letterBoard[0].length
       ) {
-        adjacents.push([x, y]);
+        adjacents.push([adjacentX, adjacentY]);
       }
     }
   }
@@ -160,36 +160,68 @@ function adjacent(x, y) {
 
 function spotClear(x, y, whitelisted) {
   if (!whitelisted) { whitelisted = []; }
-  return adjacents(x, y).reduce(function(acc, adjacent) {
-    return acc && (spotEmpty(adjacent) || whitelisted.reduce(function(acc, whitelisted) {
+  return adjacent(x, y).reduce(function(acc, adjacent) {
+    return acc && (spotEmpty(adjacent[0], adjacent[1]) || whitelisted.reduce(function(acc, whitelisted) {
       return acc || (whitelisted[0] === adjacent[0] && whitelisted[1] == adjacent[1])
     }, false));
   }, true);
 }
 
 function getPlaySpots() {
-  playSpots = [];
+  let playSpots = [];
   for (let i = 0; i < letterBoard.length; i++) {
     for (let j = 0; j < letterBoard[0].length; j++) {
-      let spot = false,
-          spotDirection = -1;
-
-      if (letterBoard[i][j] !== null) {
-        // Set spot and direction
-      }
-
-      if (spot) {
-        playSpots.push({
-          spot: [i, j],
-          letter: letterBoard[i][j],
-          // Directions are 0, 1 for right and down respectively
-          direction: spotDirection,
-          // Will track the maximum word length space
-          spotLimit: 0
-        });
-      }
+      Array.prototype.push.apply(playSpots, playSpotsAtLocation(i, j));
     }
   }
+  return playSpots;
+}
+
+function playSpotsAtLocation(i, j) {
+  let spot = false,
+      spotSize = 1,
+      playSpots = [];
+
+  if (letterBoard[i][j] !== null) {
+    // Length of spots includes the existing letter
+    if (spotEmpty(i, j + 1)) {
+      let whitelist = [[i, j]];
+      for (let k = j + 1; k < letterBoard[0].length; k++) {
+        if (!spotClear(i, k, whitelist)) {
+          break;
+        }
+        spotSize++;
+        whitelist.push([i, k]);
+      }
+
+      playSpots.push({
+        spot: [i, j],
+        letter: letterBoard[i][j],
+        // Directions are 0, 1 for right and down respectively
+        direction: 0,
+        length: spotSize
+      });
+    }
+    spotSize = 1;
+    if (spotEmpty(i + 1, j)) {
+      let whitelist = [[i, j]];
+      for (let k = i + 1; k < letterBoard.length; k++) {
+        if (!spotClear(k, j, whitelist)) {
+          break;
+        }
+        spotSize++;
+        whitelist.push([k, j]);
+      }
+
+      playSpots.push({
+        spot: [i, j],
+        letter: letterBoard[i][j],
+        direction: 1,
+        length: spotSize
+      });
+    }
+  }
+
   return playSpots;
 }
 
@@ -199,6 +231,7 @@ placementButton.onclick = function() {
   if (letterPool.length === 0) { return; }
 
   var playSpots = getPlaySpots();
+  console.log(playSpots);
 };
 
 displayBoard();
