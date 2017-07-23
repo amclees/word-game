@@ -1,35 +1,35 @@
 'use strict';
 
-var doubleLetter = {
+let doubleLetter = {
   word: false,
   factor: 2
 };
-var tripleLetter = {
+let tripleLetter = {
   word: false,
   factor: 3
 };
 
-var doubleWord = {
+let doubleWord = {
   word: true,
   factor: 2
 };
-var tripleWord = {
+let tripleWord = {
   word: true,
   factor: 3
 };
 
-var width = 15,
+let width = 15,
     height = 15;
 
-var bonusBoard = emptyBoard(width, height);
+let bonusBoard = emptyBoard(width, height);
 
-var letterBoard = emptyBoard(width, height);
+let letterBoard = emptyBoard(width, height);
 
-var start = [7, 7];
+let start = [7, 7];
 
 function getWords() {
-  var url = './eng.min.json';
-  var req = new XMLHttpRequest();
+  let url = './eng.min.json';
+  let req = new XMLHttpRequest();
   req.open('GET', url, false);
   req.overrideMimeType('application/json');
   req.send();
@@ -37,10 +37,10 @@ function getWords() {
 }
 
 function emptyBoard(width, height) {
-  var base = []
-  for (var i = 0; i < width; i++) {
-    var column = [];
-    for (var j = 0; j < height; j++) {
+  let base = []
+  for (let i = 0; i < width; i++) {
+    let column = [];
+    for (let j = 0; j < height; j++) {
       column.push(null);
     }
     base.push(column);
@@ -48,34 +48,34 @@ function emptyBoard(width, height) {
   return base;
 }
 
-var words = JSON.parse(getWords());
-var wordDictionary = {};
+let words = JSON.parse(getWords());
+let wordDictionary = {};
 for (let i = 0; i < words.length; i++) {
-  var toSort = words[i].split('').filter((word, index, array) => {
+  let toSort = words[i].split('').filter((word, index, array) => {
     return array.indexOf(word) === index;
   });
   toSort.sort();
-  var sorted = toSort.join('');
+  let sorted = toSort.join('');
   if (!wordDictionary[sorted]) {
     wordDictionary[sorted] = [];
   }
   wordDictionary[sorted].push(words[i]);
 }
 
-var boardContainer = document.getElementById('board-container');
+let boardContainer = document.getElementById('board-container');
 
 function displayBoard() {
   while (boardContainer.firstChild) {
     boardContainer.removeChild(boardContainer.firstChild);
   }
 
-  var table = document.createElement('table')
+  let table = document.createElement('table')
   table.className = 'table table-bordered';
 
-  for (var i = 0; i < letterBoard[0].length; i++) {
-    var row = document.createElement('tr');
-    for (var j = 0; j < letterBoard.length; j++) {
-      var element = document.createElement('td');
+  for (let i = 0; i < letterBoard[0].length; i++) {
+    let row = document.createElement('tr');
+    for (let j = 0; j < letterBoard.length; j++) {
+      let element = document.createElement('td');
       if (letterBoard[i][j]) {
         element.innerText = letterBoard[i][j];
       } else {
@@ -84,7 +84,7 @@ function displayBoard() {
       let x = i;
       let y = j;
       element.onclick = () => {
-        var input = prompt('Enter the letter');
+        let input = prompt('Enter the letter');
         if (!input || input.length !== 1 || !/[A-z]/.test(input)) {
           alert('Not a single letter');
           return;
@@ -100,14 +100,14 @@ function displayBoard() {
   boardContainer.appendChild(table);
 }
 
-var letterPoolInput = document.getElementById('letter-pool');
+let letterPoolInput = document.getElementById('letter-pool');
 function getLetterPool() {
   return letterPoolInput.value.toLowerCase().trim().split('').filter((letter, index, letters) => {
     return letters.indexOf(letter) === index && /[a-z]/.test(letter);
   });
 }
 
-var letterValues = {
+let letterValues = {
   'a': 1,
   'b': 1,
   'c': 1,
@@ -251,7 +251,7 @@ function playSpotsAtLocation(i, j) {
 function getPlays(playSpots) {
   let plays = [];
   for (let i = 0; i < playSpots.length; i++) {
-    
+
   }
   return plays;
 }
@@ -260,15 +260,16 @@ function choosePlay(plays) {
   return null;
 }
 
-var placementButton = document.getElementById('placement-button');
+let placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
-  var letterPool = getLetterPool();
+  let letterPool = getLetterPool();
   if (letterPool.length === 0) { return; }
 
-  var playSpots = getPlaySpots();
-  var plays = getPlays(playSpots);
-  var play = choosePlay(plays);
+  let playSpots = getPlaySpots();
+  let plays = getPlays(playSpots);
+  let play = choosePlay(plays);
 
+  console.log(playSpots);
   console.log(plays);
 };
 
