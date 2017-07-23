@@ -221,9 +221,11 @@ function playSpotsAtLocation(i, j) {
       });
     }
     spotSize = 1;
-    if (spotClear(i + 1, j
-        , [[i, j], [i, j - 1], [i, j + 1]])
-      ) {
+    if (
+      spotClear(
+        i + 1, j, [[i, j], [i, j - 1], [i, j + 1]]
+      )
+    ) {
       let whitelist = [[i, j]];
       for (let k = i + 1; k < letterBoard.length; k++) {
         if (!spotClear(k, j, whitelist)) {
