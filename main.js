@@ -164,6 +164,16 @@ function adjacent(x, y) {
 
 function spotClear(x, y, whitelisted) {
   if (!whitelisted) { whitelisted = []; }
+
+  if (
+    !(x >= 0
+    && x < letterBoard.length
+    && y >= 0
+    && y < letterBoard[0].length)
+  ) {
+    return false;
+  }
+
   return adjacent(x, y).reduce(function(acc, adjacent) {
     return acc && (spotEmpty(adjacent[0], adjacent[1]) || whitelisted.reduce(function(acc, whitelisted) {
       return acc || (whitelisted[0] === adjacent[0] && whitelisted[1] == adjacent[1])
@@ -188,7 +198,11 @@ function playSpotsAtLocation(i, j) {
 
   if (letterBoard[i][j] !== null) {
     // Length of spots includes the existing letter
-    if (spotEmpty(i, j + 1)) {
+    if (
+      spotClear(
+        i, j + 1, [[i, j], [i - 1, j], [i + 1, j]]
+      )
+    ) {
       let whitelist = [[i, j]];
       for (let k = j + 1; k < letterBoard[0].length; k++) {
         if (!spotClear(i, k, whitelist)) {
@@ -207,7 +221,9 @@ function playSpotsAtLocation(i, j) {
       });
     }
     spotSize = 1;
-    if (spotEmpty(i + 1, j)) {
+    if (spotClear(i + 1, j
+        , [[i, j], [i, j - 1], [i, j + 1]])
+      ) {
       let whitelist = [[i, j]];
       for (let k = i + 1; k < letterBoard.length; k++) {
         if (!spotClear(k, j, whitelist)) {
