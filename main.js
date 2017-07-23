@@ -1,3 +1,4 @@
+'use strict';
 
 var doubleLetter = {
   word: false,
@@ -247,13 +248,28 @@ function playSpotsAtLocation(i, j) {
   return playSpots;
 }
 
+function getPlays(playSpots) {
+  let plays = [];
+  for (let i = 0; i < playSpots.length; i++) {
+    
+  }
+  return plays;
+}
+
+function choosePlay(plays) {
+  return null;
+}
+
 var placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
   var letterPool = getLetterPool();
   if (letterPool.length === 0) { return; }
 
   var playSpots = getPlaySpots();
-  console.log(playSpots);
+  var plays = getPlays(playSpots);
+  var play = choosePlay(plays);
+
+  console.log(plays);
 };
 
 displayBoard();
