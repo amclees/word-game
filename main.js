@@ -136,7 +136,11 @@ var letterValues = {
 };
 
 function spotEmpty(x, y) {
-  return letterBoard[x][y] === null;
+  return x >= 0
+    && y >= 0
+    && x < letterBoard.length
+    && y < letterBoard[0].length
+    && letterBoard[x][y] === null;
 }
 
 function adjacent(x, y) {
