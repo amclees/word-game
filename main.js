@@ -172,12 +172,20 @@ function scorePlay(play) {
   }, 0);
 }
 
-function spotEmpty(x, y) {
-  return x >= 0
-    && y >= 0
-    && x < letterBoard.length
-    && y < letterBoard[0].length
-    && letterBoard[x][y] === null;
+function spotEmpty(x, y, outOfBounds = false) {
+  if (outOfBounds) {
+    return (!(x >= 0
+      && y >= 0
+      && x < letterBoard.length
+      && y < letterBoard[0].length))
+      || letterBoard[x][y] === null;
+  } else {
+    return x >= 0
+      && y >= 0
+      && x < letterBoard.length
+      && y < letterBoard[0].length
+      && letterBoard[x][y] === null;
+  }
 }
 
 function adjacent(x, y) {
@@ -239,6 +247,7 @@ function playSpotsAtLocation(i, j) {
       spotClear(
         i, j + 1, [[i, j], [i - 1, j], [i + 1, j]]
       )
+      && spotEmpty(i, j - 1, true)
     ) {
       let whitelist = [[i, j], [i - 1, j], [i + 1, j]];
       for (let k = j + 1; k < letterBoard[0].length; k++) {
@@ -262,6 +271,7 @@ function playSpotsAtLocation(i, j) {
       spotClear(
         i + 1, j, [[i, j], [i, j - 1], [i, j + 1]]
       )
+      && spotEmpty(i - 1, j, true)
     ) {
       let whitelist = [[i, j], [i, j - 1], [i, j + 1]];
       for (let k = i + 1; k < letterBoard.length; k++) {
