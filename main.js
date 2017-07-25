@@ -166,6 +166,12 @@ let letterValues = {
   'z': 1
 };
 
+function scorePlay(play) {
+  return play.word.split('').reduce((score, letter) => {
+    return score + letterValues[letter];
+  }, 0);
+}
+
 function spotEmpty(x, y) {
   return x >= 0
     && y >= 0
@@ -306,7 +312,20 @@ function getPlays(playSpots, letterPool) {
 }
 
 function choosePlay(plays) {
-  return plays[0];
+  let scores = plays.map(scorePlay);
+  let highScore = -1;
+  let toReturn = null;
+  for (let i = 0; i < plays.length; i++) {
+    if (scores[i] > highScore) {
+      toReturn = plays[i];
+      highScore = scores[i];
+    }
+  }
+  return toReturn;
+}
+
+function applyPlay(play) {
+
 }
 
 let placementButton = document.getElementById('placement-button');
@@ -318,8 +337,11 @@ placementButton.onclick = function() {
   let plays = getPlays(playSpots, letterPool);
   let play = choosePlay(plays);
 
+  applyPlay(play);
+
   console.log(playSpots);
   console.log(plays);
+  console.log(play);
 };
 
 displayBoard();
