@@ -325,7 +325,15 @@ function choosePlay(plays) {
 }
 
 function applyPlay(play) {
-
+  let changingDimensionStart = play.playSpot.spot[play.playSpot.direction === 1 ? 0 : 1];
+  for (let i = changingDimensionStart; i < changingDimensionStart + play.word.length; i++) {
+    if (play.playSpot.direction === 0) {
+      letterBoard[play.playSpot.spot[0]][i] = play.word.charAt(i - changingDimensionStart);
+    } else {
+      letterBoard[i][play.playSpot.spot[1]] = play.word.charAt(i - changingDimensionStart);
+    }
+  }
+  displayBoard();
 }
 
 let placementButton = document.getElementById('placement-button');
@@ -338,10 +346,6 @@ placementButton.onclick = function() {
   let play = choosePlay(plays);
 
   applyPlay(play);
-
-  console.log(playSpots);
-  console.log(plays);
-  console.log(play);
 };
 
 displayBoard();
