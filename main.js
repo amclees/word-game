@@ -102,8 +102,35 @@ function displayBoard() {
 
 let letterPoolInput = document.getElementById('letter-pool');
 function getLetterPool() {
-  return letterPoolInput.value.toLowerCase().trim().split('').filter((letter, index, letters) => {
+  return normalizeLetters(letterPoolInput.value);
+}
+
+function normalizeLetters(letters) {
+  return letters.toLowerCase().trim().split('').filter((letter, index, letters) => {
     return letters.indexOf(letter) === index && /[a-z]/.test(letter);
+  });
+}
+
+function combinations(array, amountToChoose) {
+  if (amountToChoose === 1) {
+    return array;
+  } else if (amountToChoose < 1) {
+    return [];
+  }
+  let combinationList = [];
+  for (let i = 0; i < array.length; i++) {
+    Array.prototype.push.apply(
+      combinationList,
+      combinations(array.slice(0, i).concat(array.slice(i + 1)), amountToChoose - 1)
+      .map((fragment) => {
+        return array[i] + fragment;
+      })
+    );
+  }
+  return combinationList.map((element) => {
+    return normalizeLetters(element).join('');
+  }).filter((letter, index, letters) => {
+    return letters.indexOf(letter) === index;
   });
 }
 
@@ -251,13 +278,16 @@ function playSpotsAtLocation(i, j) {
 function getPlays(playSpots) {
   let plays = [];
   for (let i = 0; i < playSpots.length; i++) {
+    let playSpot = playSpots[i];
+    for (let length = playSpot.spotSize; length > 2; length--) {
 
+    }
   }
   return plays;
 }
 
 function choosePlay(plays) {
-  return null;
+  return plays[0];
 }
 
 let placementButton = document.getElementById('placement-button');
