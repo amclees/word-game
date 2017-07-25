@@ -51,11 +51,7 @@ function emptyBoard(width, height) {
 let words = JSON.parse(getWords());
 let wordDictionary = {};
 for (let i = 0; i < words.length; i++) {
-  let toSort = words[i].split('').filter((word, index, array) => {
-    return array.indexOf(word) === index;
-  });
-  toSort.sort();
-  let sorted = toSort.join('');
+  let sorted = alphabetizeLetters(words[i]);
   if (!wordDictionary[sorted]) {
     wordDictionary[sorted] = [];
   }
@@ -77,7 +73,7 @@ function displayBoard() {
     for (let j = 0; j < letterBoard.length; j++) {
       let element = document.createElement('td');
       if (letterBoard[i][j]) {
-        element.innerText = letterBoard[i][j];
+        element.innerText = letterBoard[i][j].toUpperCase();
       } else {
         element.innerText = '\u25ef';
       }
@@ -89,7 +85,7 @@ function displayBoard() {
           alert('Not a single letter');
           return;
         }
-        letterBoard[x][y] = input.toUpperCase();
+        letterBoard[x][y] = input.toLowerCase();
         displayBoard();
       }
       row.appendChild(element);
@@ -106,9 +102,16 @@ function getLetterPool() {
 }
 
 function normalizeLetters(letters) {
-  return letters.toLowerCase().trim().split('').filter((letter, index, letters) => {
+  let toReturn = alphabetizeLetters(letters);
+  return toReturn.filter((letter, index, letters) => {
     return letters.indexOf(letter) === index && /[a-z]/.test(letter);
   });
+}
+
+function alphabetizeLetters(letters) {
+  let toReturn = letters.toLowerCase().trim().split('');
+  toReturn.sort();
+  return toReturn;
 }
 
 function combinations(array, amountToChoose) {
@@ -128,7 +131,7 @@ function combinations(array, amountToChoose) {
     );
   }
   return combinationList.map((element) => {
-    return normalizeLetters(element).join('');
+    return alphabetizeLetters(element).join('');
   }).filter((letter, index, letters) => {
     return letters.indexOf(letter) === index;
   });
@@ -231,7 +234,7 @@ function playSpotsAtLocation(i, j) {
         i, j + 1, [[i, j], [i - 1, j], [i + 1, j]]
       )
     ) {
-      let whitelist = [[i, j]];
+      let whitelist = [[i, j], [i - 1, j], [i + 1, j]];
       for (let k = j + 1; k < letterBoard[0].length; k++) {
         if (!spotClear(i, k, whitelist)) {
           break;
@@ -254,7 +257,7 @@ function playSpotsAtLocation(i, j) {
         i + 1, j, [[i, j], [i, j - 1], [i, j + 1]]
       )
     ) {
-      let whitelist = [[i, j]];
+      let whitelist = [[i, j], [i, j - 1], [i, j + 1]];
       for (let k = i + 1; k < letterBoard.length; k++) {
         if (!spotClear(k, j, whitelist)) {
           break;
@@ -275,12 +278,28 @@ function playSpotsAtLocation(i, j) {
   return playSpots;
 }
 
-function getPlays(playSpots) {
+function getPlays(playSpots, letterPool) {
   let plays = [];
   for (let i = 0; i < playSpots.length; i++) {
     let playSpot = playSpots[i];
-    for (let length = playSpot.spotSize; length > 2; length--) {
-
+    for (let length = playSpot.length; length >= 2; length--) {
+      let wordBases = combinations(letterPool, length - 1).map((lettersUsed) => {
+        return alphabetizeLetters(playSpot.letter + lettersUsed);
+      }).filter((possibleWord) => {
+        return wordDictionary[possibleWord] !== undefined;
+      });
+      let words = [];
+      wordBases.forEach((wordBase) => {
+        Array.prototype.push.apply(words, wordDictionary[wordBase].filter((potentialWord) => {
+          return potentialWord.charAt(0) === playSpot.letter;
+        }));
+      });
+      Array.prototype.push.apply(plays, words.map((word) => {
+        return {
+          'word': word,
+          'playSpot': playSpot
+        };
+      }));
     }
   }
   return plays;
@@ -296,7 +315,7 @@ placementButton.onclick = function() {
   if (letterPool.length === 0) { return; }
 
   let playSpots = getPlaySpots();
-  let plays = getPlays(playSpots);
+  let plays = getPlays(playSpots, letterPool);
   let play = choosePlay(plays);
 
   console.log(playSpots);
