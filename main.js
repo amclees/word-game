@@ -56,6 +56,10 @@ function getWords() {
   return req.responseText;
 }
 
+function resetBoard() {
+  letterBoard = emptyBoard(width, height)
+}
+
 function emptyBoard(width, height) {
   let base = []
   for (let i = 0; i < width; i++) {
@@ -92,6 +96,18 @@ function displayBoard() {
     let row = document.createElement('tr');
     for (let j = 0; j < letterBoard.length; j++) {
       let element = document.createElement('td');
+
+      if (bonusBoard[i][j] === dl) {
+        element.className = 'dl';
+      } else if (bonusBoard[i][j] === dw) {
+        element.className = 'dw';
+      } else if (bonusBoard[i][j] === tl) {
+        element.className = 'tl';
+      } else if (bonusBoard[i][j] === tw) {
+        element.className = 'tw';
+      }
+
+
       if (letterBoard[i][j]) {
         element.innerText = letterBoard[i][j].toUpperCase();
       } else {
@@ -195,8 +211,42 @@ let letterValues = {
 };
 
 function scorePlay(play) {
-  return play.word.split('').reduce((score, letter) => {
-    return score + letterValues[letter];
+  let endModifier = 1;
+
+  let changingDimensionStart = play.playSpot.spot[play.playSpot.direction === 1 ? 0 : 1];
+  for (let i = changingDimensionStart + 1; i < changingDimensionStart + play.word.length; i++) {
+    let bonus = null;
+    if (play.playSpot.direction === 0) {
+      bonus = bonusBoard[play.playSpot.spot[0]][i];
+    } else {
+      bonus = bonusBoard[i][play.playSpot.spot[1]];
+    }
+    if (bonus === dw) {
+      endModifier *= 2;
+    } else if (bonus === tw) {
+      endModifier *= 3;
+    }
+  }
+
+  return endModifier * play.word.split('').reduce((score, letter, index) => {
+    let letterBonus = null;
+    if (play.playSpot.direction === 0) {
+      letterBonus = bonusBoard[play.playSpot.spot[0]][changingDimensionStart + index];
+    } else {
+      letterBonus = bonusBoard[changingDimensionStart + index][play.playSpot.spot[1]];
+    }
+    console.log(letterBonus);
+    let letterModifier = 1;
+    if (letterBonus === dl) {
+      console.log('dl');
+      letterModifier = 2;
+    } else if (letterBonus === tl) {
+      letterModifier = 3;
+    }
+    if (index === 0) {
+      letterModifier = 1;
+    }
+    return score + (letterValues[letter] * letterModifier);
   }, 0);
 }
 
