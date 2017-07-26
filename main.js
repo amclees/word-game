@@ -1,19 +1,23 @@
 'use strict';
 
-let doubleLetter = {
+// Double letter
+let dl = {
   word: false,
   factor: 2
 };
-let tripleLetter = {
+// Triple letter
+let tl = {
   word: false,
   factor: 3
 };
 
-let doubleWord = {
+// Double word
+let dw = {
   word: true,
   factor: 2
 };
-let tripleWord = {
+//Triple word
+let tw = {
   word: true,
   factor: 3
 };
@@ -21,7 +25,23 @@ let tripleWord = {
 let width = 15,
     height = 15;
 
-let bonusBoard = emptyBoard(width, height);
+let bonusBoard = [
+  [tw  , null, null, dl  , null, null, null, tw  , null, null, null, dl  , null, null, tw  ],
+  [null, dw  , null, null, null, tl  , null, null, null, tl  , null, null, null, dw  , null],
+  [null, null, dw  , null, null, null, dl  , null, dl  , null, null, null, dw  , null, null],
+  [dl  , null, null, dw  , null, null, null, dl  , null, null, null, dw  , null, null, dl  ],
+  [null, null, null, null, dw  , null, null, null, null, null, dw  , null, null, null, null],
+  [null, tl  , null, null, null, dw  , null, null, null, dw  , null, null, null, tl  , null],
+  [null, null, dl  , null, null, null, tl  , null, tl  , null, null, null, dl  , null, null],
+  [tw  , null, null, dl  , null, null, null, dw  , null, null, null, dl  , null, null, tw  ],
+  [null, null, dl  , null, null, null, tl  , null, tl  , null, null, null, dl  , null, null],
+  [null, tl  , null, null, null, dw  , null, null, null, dw  , null, null, null, tl  , null],
+  [null, null, null, null, dw  , null, null, null, null, null, dw  , null, null, null, null],
+  [dl  , null, null, dw  , null, null, null, dl  , null, null, null, dw  , null, null, dl  ],
+  [null, null, dw  , null, null, null, dl  , null, dl  , null, null, null, dw  , null, null],
+  [null, dw  , null, null, null, tl  , null, null, null, tl  , null, null, null, dw  , null],
+  [tw  , null, null, dl  , null, null, null, tw  , null, null, null, dl  , null, null, tw  ],
+];
 
 let letterBoard = emptyBoard(width, height);
 
