@@ -111,7 +111,7 @@ function displayBoard() {
       if (letterBoard[i][j]) {
         element.innerText = letterBoard[i][j].toUpperCase();
       } else {
-        element.innerText = '\u25ef';
+        element.innerText = '　';
       }
       let x = i;
       let y = j;
