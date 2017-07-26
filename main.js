@@ -235,10 +235,9 @@ function scorePlay(play) {
     } else {
       letterBonus = bonusBoard[changingDimensionStart + index][play.playSpot.spot[1]];
     }
-    console.log(letterBonus);
+
     let letterModifier = 1;
     if (letterBonus === dl) {
-      console.log('dl');
       letterModifier = 2;
     } else if (letterBonus === tl) {
       letterModifier = 3;
