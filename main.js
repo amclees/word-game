@@ -392,27 +392,26 @@ function getPlays(playSpots, letterPool) {
   for (let i = 0; i < playSpots.length; i++) {
     let playSpot = playSpots[i];
     for (let length = playSpot.length; length >= 2; length--) {
-      let letterCombinations = [];
-
       for (let c = 0; c < wildcardCombinations.length; c++) {
-        Array.prototype.push.apply(letterCombinations, combinations(letterPool.concat(wildcardCombinations[c]), length - 1));
-      }
+        let wordBases = combinations(letterPool.concat(wildcardCombinations[c]), length - 1);
+        let used = {};
 
-      let wordBases = letterCombinations.map((lettersUsed) => {
-        return alphabetizeLetters(playSpot.letter + lettersUsed);
-      }).filter((possibleWord) => {
-        return wordDictionary[possibleWord] !== undefined;
-      });
-      wordBases.forEach((wordBase) => {
-        Array.prototype.push.apply(plays, wordDictionary[wordBase].filter((potentialWord) => {
-          return potentialWord.charAt(0) === playSpot.letter;
-        }).map((word) => {
-          return {
-            'word': word,
-            'playSpot': playSpot
-          };
-        }));
-      });
+        for (let d = 0; d < wordBases.length; d++) {
+          let alphabetized = alphabetizeLetters(playSpot.letter + wordBases[d]);
+          if (used[alphabetized] !== undefined) { continue; }
+          used[alphabetized] = true;
+
+          let words = wordDictionary[alphabetized];
+          if (words === undefined) { continue; }
+          for (let e = 0; e < words.length; e++) {
+            if (words[e].charAt(0) !== playSpot.letter) { continue; }
+            plays.push({
+              'word': words[e],
+              'playSpot': playSpot
+            });
+          }
+        }
+      }
     }
   }
   return plays;
