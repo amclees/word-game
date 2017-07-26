@@ -101,7 +101,15 @@ function displayBoard() {
       let y = j;
       element.onclick = () => {
         let input = prompt('Enter the letter');
-        if (!input || input.length !== 1 || !/[A-z]/.test(input)) {
+        if (input === '') {
+          letterBoard[x][y] = null;
+          displayBoard();
+          return;
+        }
+        if (!input) {
+          return;
+        }
+        if (input.length !== 1 || !/[A-z]/.test(input)) {
           alert('Not a single letter');
           return;
         }
