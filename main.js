@@ -142,7 +142,7 @@ function displayBoard() {
 
 let letterPoolInput = document.getElementById('letter-pool');
 function getLetterPool() {
-  return normalizeLetters(letterPoolInput.value);
+  return alphabetizeLetters(letterPoolInput.value);
 }
 
 function normalizeLetters(letters) {
@@ -156,6 +156,10 @@ function alphabetizeLetters(letters) {
   let toReturn = letters.toLowerCase().trim().split('');
   toReturn.sort();
   return toReturn;
+}
+
+function lettersOnly(letters) {
+  return letters.join('').replace(/[^a-z]/, '').split('');
 }
 
 function combinations(array, amountToChoose) {
@@ -372,27 +376,43 @@ function playSpotsAtLocation(i, j) {
 }
 
 function getPlays(playSpots, letterPool) {
+  let wildcards = letterPool.length - letterPool.join('').replace(/\*/g, '').length;
+
+  let alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+  for (let w = 0; w < wildcards - 1; w++) {
+    Array.prototype.push.apply(alphabet, alphabet);
+  }
+  let wildcardCombinations = combinations(alphabet, wildcards).map((string) => {
+    return string.split('');
+  });
+
+  letterPool = lettersOnly(letterPool);
+
   let plays = [];
   for (let i = 0; i < playSpots.length; i++) {
     let playSpot = playSpots[i];
     for (let length = playSpot.length; length >= 2; length--) {
-      let wordBases = combinations(letterPool, length - 1).map((lettersUsed) => {
+      let letterCombinations = [];
+
+      for (let c = 0; c < wildcardCombinations.length; c++) {
+        Array.prototype.push.apply(letterCombinations, combinations(letterPool.concat(wildcardCombinations[c]), length - 1));
+      }
+
+      let wordBases = letterCombinations.map((lettersUsed) => {
         return alphabetizeLetters(playSpot.letter + lettersUsed);
       }).filter((possibleWord) => {
         return wordDictionary[possibleWord] !== undefined;
       });
-      let words = [];
       wordBases.forEach((wordBase) => {
-        Array.prototype.push.apply(words, wordDictionary[wordBase].filter((potentialWord) => {
+        Array.prototype.push.apply(plays, wordDictionary[wordBase].filter((potentialWord) => {
           return potentialWord.charAt(0) === playSpot.letter;
+        }).map((word) => {
+          return {
+            'word': word,
+            'playSpot': playSpot
+          };
         }));
       });
-      Array.prototype.push.apply(plays, words.map((word) => {
-        return {
-          'word': word,
-          'playSpot': playSpot
-        };
-      }));
     }
   }
   return plays;
