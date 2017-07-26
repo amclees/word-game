@@ -423,6 +423,12 @@ function applyPlay(play) {
   displayBoard();
 }
 
+let resetButton = document.getElementById('reset-button');
+resetButton.onclick = function() {
+  resetBoard();
+  displayBoard();
+}
+
 let placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
   let letterPool = getLetterPool();
