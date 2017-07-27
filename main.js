@@ -442,6 +442,18 @@ function applyPlay(play) {
   displayBoard();
 }
 
+function getLineCoords(start, end) {
+  let coords = [];
+
+  for (let x = start[0]; x <= end[0]; x++) {
+    for (let y = start[1]; y <= end[1]; y++) {
+      coords.push([x, y]);
+    }
+  }
+
+  return coords;
+}
+
 let resetButton = document.getElementById('reset-button');
 resetButton.onclick = function() {
   resetBoard();
