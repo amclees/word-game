@@ -454,6 +454,16 @@ function getLineCoords(start, end) {
   return coords;
 }
 
+function validateLine(start, end, validator) {
+  let coords = getLineCoords(start, end);
+
+  let valid = true;
+  for (let i = 0; i < coords.length; i++) {
+    valid = valid && validator(coords[i]);
+  }
+  return valid;
+}
+
 let resetButton = document.getElementById('reset-button');
 resetButton.onclick = function() {
   resetBoard();
