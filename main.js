@@ -296,6 +296,18 @@ function isPlayLine(x, y, direction) {
 }
 
 function sidesValid(x, y, direction, letter) {
+  let allDirections = [up, down, left, right];
+  allDirections.splice(allDirections.indexOf(direction), 1);
+  let pos = [x, y];
+  for (let sideDirection of allDirections) {
+    let sidePos = sideDirection(pos);
+    if (sidePos[0] < 0 || sidePos[1] < 0 || sidePos[0] > letterBoard.length || sidePos[1] > letterBoard[0].length) {
+      continue;
+    }
+    if (letterBoard[sidePos[0]][sidePos[1]] !== null) {
+      return false;
+    }
+  }
   return true;
 }
 
