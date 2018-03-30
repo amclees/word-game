@@ -314,10 +314,8 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
   let existingValue = letterBoard[x][y];
   if (existingValue !== null) {
     if (branch[existingValue]) {
-      if (bonus && bonus.word) {
-        wordBonus *= bonus.factor;
-      }
-      let usePlay = maxSpotPlay(playLine, i + 1, score + (letterBonus * letterValues[existingValue]), string + existingValue, letterPool, branch[existingValue], newLetter, start === null ? i : start, wordBonus, false);
+      // Plays on existing letters does not get their bonuses
+      let usePlay = maxSpotPlay(playLine, i + 1, score + letterValues[existingValue], string + existingValue, letterPool, branch[existingValue], newLetter, start === null ? i : start, wordBonus, false);
       return bestSkipPlay && (bestSkipPlay[0] > usePlay[0]) ? bestSkipPlay : usePlay;
     } else {
       return [-Infinity, '', start];
