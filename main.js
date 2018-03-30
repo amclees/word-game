@@ -279,67 +279,89 @@ function inBounds(point) {
       && point[1] < letterBoard[0].length;
 };
 
-let up = p => [p[0] - 1, p[1]];
-let down = p => [p[0] + 1, p[1]];
-let left = p => [p[0], p[1] - 1];
-let right = p => [p[0], p[1] + 1];
+let up = (p, k = 1) => [p[0] - k, p[1]];
+let down = (p, k = 1) => [p[0] + k, p[1]];
+let left = (p, k = 1) => [p[0], p[1] - k];
+let right = (p, k = 1) => [p[0], p[1] + k];
 let directions = [down, right];
 
-function getPlayLine(x, y, direction) {
-  let coords = [[x, y]];
-
-  let current = direction([x, y]);
+function isPlayLine(x, y, direction) {
+  let current = [x, y];
   while (inBounds(current)) {
-    coords.push(current);
+    if (letterBoard[current[0]][current[1]] !== null) return true;
     current = direction(current);
   }
 
-  coords.direction = direction;
-
-  return coords;
+  return false;
 }
 
-// Needs reverse mode for up/left play
-// Needs modifiers
-function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter) {
-  if (i === playLine.length && newLetter) {
-    return [score, string];
+function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, start, wordBonus, firstLevel) {
+  let bestSkipPlay;
+  if (i >= letterBoard.length && newLetter) {
+    return [score * wordBonus, string, start];
+  } else if (i >= letterBoard.length) {
+    return [-Infinity, '', start];
   }
+  if (!newLetter) {
+    bestSkipPlay = maxSpotPlay(playLine, i + 1, 0, '', letterPool, wordTree, false, null, 1, true);
+  }
+  let here = playLine[2]([playLine[0], playLine[1]], i);
+  let x = here[0];
+  let y = here[1];
+  let bonus = bonusBoard[x][y];
+  let letterBonus = bonus === null ? 1 : (bonus.word ? 1 : bonus.factor);
 
-  let existingValue = letterBoard[playLine[i][0]][playLine[i][1]];
+  let existingValue = letterBoard[x][y];
   if (existingValue !== null) {
     if (branch[existingValue]) {
-      return maxSpotPlay(playLine, i + 1, score + letterValues[existingValue], string + existingValue, letterPool, branch[existingValue], newLetter);
+      if (bonus && bonus.word) {
+        wordBonus *= bonus.factor;
+      }
+      let usePlay = maxSpotPlay(playLine, i + 1, score + (letterBonus * letterValues[existingValue]), string + existingValue, letterPool, branch[existingValue], newLetter, start === null ? i : start, wordBonus, false);
+      return bestSkipPlay && (bestSkipPlay[0] > usePlay[0]) ? bestSkipPlay : usePlay;
     } else {
-      return [-Infinity, ''];
+      return [-Infinity, '', start];
     }
   }
 
   let bestScore = -Infinity;
   let bestString = '';
+  let bestStart = 0;
 
   if (branch.end && newLetter) {
-    bestScore = score;
+    bestScore = score * wordBonus;
     bestString = string;
+    bestStart = start;
+  }
+
+  if (bonus && bonus.word) {
+    wordBonus *= bonus.factor;
   }
 
   for (let letter in branch) {
     if (letterPool[letter] && letterPool[letter] > 0) {
       letterPool[letter]--;
-      let maxWithLetter = maxSpotPlay(playLine, i + 1, score + letterValues[letter], string + letter, letterPool, branch[letter], true);
+      let maxWithLetter = maxSpotPlay(playLine, i + 1, score + (letterBonus * letterValues[letter]), string + letter, letterPool, branch[letter], true, start === null ? i : start, wordBonus, false);
       letterPool[letter]++;
       if (maxWithLetter[0] > bestScore) {
         bestScore = maxWithLetter[0];
         bestString = maxWithLetter[1];
+        bestStart = maxWithLetter[2];
       }
     }
   }
-  return [bestScore, bestString];
+
+  if (!bestSkipPlay || bestScore > bestSkipPlay[0]) {
+    return [bestScore, bestString, bestStart];
+  } else {
+    return bestSkipPlay;
+  }
 }
 
 function tryLine(playLine, letterPool) {
-  let firstLetter = letterBoard[playLine[0][0]][playLine[0][1]]
-  let bestPlay = maxSpotPlay(playLine, 1, 0, firstLetter, letterPool, wordTree[firstLetter], false);
+  let bestPlay = maxSpotPlay(playLine, 1, 0, '', letterPool, wordTree, false, 0, 1, true);
+
+  console.log(bestPlay);
 
   return bestPlay;
 }
@@ -349,33 +371,31 @@ function play() {
 
   let playLines = [];
   for (let i = 0; i < letterBoard.length; i++) {
-    for (let j = 0; j < letterBoard[0].length; j++) {
-      if (letterBoard[i][j] == null) {
-        continue;
-      }
-      for (let direction of directions) {
-        let line = getPlayLine(i, j, direction);
-        if (line.length !== 0) {
-          playLines.push(line);
-        }
-      }
+    if (isPlayLine(0, i, down)) {
+      playLines.push([0, i, down]);
+    }
+    if (isPlayLine(i, 0, right)) {
+      playLines.push([i, 0, right]);
     }
   }
 
   let bestLine = null;
   let bestString = '';
   let bestScore = -1;
+  let bestIndex = -1;
   for (let playLine of playLines) {
     let move = tryLine(playLine, letterPool);
     if (move[0] > bestScore) {
       bestLine = playLine;
       bestScore = move[0];
       bestString = move[1];
+      bestIndex = move[2];
     }
   }
 
   for (let i = 0; i < bestString.length; i++) {
-    letterBoard[bestLine[i][0]][bestLine[i][1]] = bestString[i];
+    let pos = bestLine[2]([bestLine[0], bestLine[1]], i + bestIndex);
+    letterBoard[pos[0]][pos[1]] = bestString[i];
   }
 }
 
@@ -383,7 +403,7 @@ let resetButton = document.getElementById('reset-button');
 resetButton.onclick = function() {
   resetBoard();
   displayBoard();
-}
+};
 
 let placementButton = document.getElementById('placement-button');
 placementButton.onclick = function() {
