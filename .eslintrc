@@ -7,7 +7,9 @@
     "sourceType": "module"
   },
   "globals": {
-    "window": true
+    "window": true,
+    "document": true,
+    "console": true
   },
   "rules": {
     "block-scoped-var": 2,
