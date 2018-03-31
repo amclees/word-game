@@ -295,31 +295,72 @@ function isPlayLine(x, y, direction) {
   return false;
 }
 
-function sidesValid(x, y, direction, letter) {
-  let allDirections = [up, down, left, right];
-  allDirections.splice(allDirections.indexOf(direction), 1);
-  let pos = [x, y];
-  for (let sideDirection of allDirections) {
-    let sidePos = sideDirection(pos);
-    if (sidePos[0] < 0 || sidePos[1] < 0 || sidePos[0] > letterBoard.length || sidePos[1] > letterBoard[0].length) {
-      continue;
-    }
-    if (letterBoard[sidePos[0]][sidePos[1]] !== null) {
-      return false;
-    }
-  }
-  return true;
+function char(pos) {
+  return letterBoard[pos[0]][pos[1]];
 }
 
-function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, start, wordBonus, firstLevel, oldLetter) {
+function sidesScore(x, y, direction, letter) {
+  let back, forward;
+  if (direction === left || direction === right) {
+    // Discover and verify up/down words
+    back = up;
+    forward = down;
+  } else {
+    // Discover and verify left/right words
+    back = left;
+    forward = down;
+  }
+  let pos = [x, y];
+  let ahead;
+  while (ahead = back(pos)) {
+    if (ahead[0] < 0 || ahead[1] < 0 || ahead[0] > letterBoard.length || ahead[1] > letterBoard.length) break;
+    if (char(ahead) === null) break;
+    pos = ahead;
+  }
+
+  let frame = wordTree;
+  let score = 0;
+  let count = 0;
+  while (true) {
+    if (!inBounds(pos) || char(pos) === null) {
+      break;
+    }
+    if (!frame[char(pos)]) {
+      return -1;
+    }
+    score += letterValues[char(pos)];
+    frame = frame[char(pos)];
+    pos = forward(pos);
+    count++;
+  }
+
+  if (!frame.end && count > 1) {
+    return -1;
+  }
+
+  let bonus = bonusBoard[x][y];
+  if (bonus) {
+    if (bonus.word) {
+      score *= bonus.factor;
+    } else {
+      let sourceChar = char([x, y]);
+      score -= letterValues[sourceChar];
+      score += letterValues[sourceChar] * bonus.factor;
+    }
+  }
+
+  return score;
+}
+
+function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, start, wordBonus, firstLevel, oldLetter, sideTotal) {
   let bestSkipPlay;
   if (i === letterBoard.length - 1 && newLetter && oldLetter) {
-    return [score * wordBonus, string, start];
+    return [(score * wordBonus) + sideTotal, string, start];
   } else if (i >= letterBoard.length) {
     return [-Infinity, '', start];
   }
   if (!newLetter) {
-    bestSkipPlay = maxSpotPlay(playLine, i + 1, 0, '', letterPool, wordTree, false, null, 1, true, false);
+    bestSkipPlay = maxSpotPlay(playLine, i + 1, 0, '', letterPool, wordTree, false, null, 1, true, false, 0);
   }
   let here = playLine[2]([playLine[0], playLine[1]], i);
   let x = here[0];
@@ -328,10 +369,11 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
   let letterBonus = bonus === null ? 1 : (bonus.word ? 1 : bonus.factor);
 
   let existingValue = letterBoard[x][y];
+  // This does not support plays that end in existing letters
   if (existingValue !== null) {
     if (branch[existingValue]) {
       // Plays on existing letters does not get their bonuses
-      let usePlay = maxSpotPlay(playLine, i + 1, score + letterValues[existingValue], string + existingValue, letterPool, branch[existingValue], newLetter, start === null ? i : start, wordBonus, false, true);
+      let usePlay = maxSpotPlay(playLine, i + 1, score + letterValues[existingValue], string + existingValue, letterPool, branch[existingValue], newLetter, start === null ? i : start, wordBonus, false, true, sideTotal);
       return bestSkipPlay && (bestSkipPlay[0] > usePlay[0]) ? bestSkipPlay : usePlay;
     } else {
       return [-Infinity, '', start];
@@ -343,7 +385,7 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
   let bestStart = 0;
 
   if (branch.end && newLetter && oldLetter) {
-    bestScore = score * wordBonus;
+    bestScore = (score * wordBonus) + sideTotal;
     bestString = string;
     bestStart = start;
   }
@@ -353,12 +395,14 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
   }
 
   for (let letter in branch) {
-    if (!sidesValid(x, y, playLine[2], letter)) {
+    let sideScore = sidesScore(x, y, playLine[2], letter);
+
+    if (sideScore === -1) {
       continue;
     }
     if (letterPool[letter] && letterPool[letter] > 0) {
       letterPool[letter]--;
-      let maxWithLetter = maxSpotPlay(playLine, i + 1, score + (letterBonus * letterValues[letter]), string + letter, letterPool, branch[letter], true, start === null ? i : start, wordBonus, false, oldLetter);
+      let maxWithLetter = maxSpotPlay(playLine, i + 1, score + (letterBonus * letterValues[letter]), string + letter, letterPool, branch[letter], true, start === null ? i : start, wordBonus, false, oldLetter, sideTotal + sideScore);
       letterPool[letter]++;
       if (maxWithLetter[0] > bestScore) {
         bestScore = maxWithLetter[0];
@@ -367,7 +411,7 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
       }
     } else if (letterPool['*'] && letterPool['*'] > 0) {
       letterPool['*']--;
-      let maxWithLetter = maxSpotPlay(playLine, i + 1, score, string + letter, letterPool, branch[letter], true, start === null ? i : start, wordBonus, false, oldLetter);
+      let maxWithLetter = maxSpotPlay(playLine, i + 1, score, string + letter, letterPool, branch[letter], true, start === null ? i : start, wordBonus, false, oldLetter, sideTotal + sideScore);
       letterPool['*']++;
       if (maxWithLetter[0] > bestScore) {
         bestScore = maxWithLetter[0];
@@ -385,9 +429,7 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
 }
 
 function tryLine(playLine, letterPool) {
-  let bestPlay = maxSpotPlay(playLine, 1, 0, '', letterPool, wordTree, false, 0, 1, true, false);
-
-  console.log(bestPlay);
+  let bestPlay = maxSpotPlay(playLine, 1, 0, '', letterPool, wordTree, false, 0, 1, true, false, 0);
 
   return bestPlay;
 }
