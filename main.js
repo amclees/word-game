@@ -369,7 +369,7 @@ function maxSpotPlay(playLine, i, score, string, letterPool, branch, newLetter, 
       if (!inBounds(clearPos)) break;
       if (char(clearPos) === null) break;
     }
-    bestSkipPlay = maxSpotPlay(playLine, i + nextClear, 0, '', letterPool, wordTree, false, null, 1, true, false, 0);
+    bestSkipPlay = maxSpotPlay(playLine, i + nextClear - 1, 0, '', letterPool, wordTree, false, null, 1, true, false, 0);
   }
   let here = playLine[2]([playLine[0], playLine[1]], i);
   let x = here[0];
