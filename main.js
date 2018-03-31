@@ -309,7 +309,7 @@ function sidesScore(x, y, direction, letter) {
   } else {
     // Discover and verify left/right words
     back = left;
-    forward = down;
+    forward = right;
   }
   let pos = [x, y];
   let ahead;
